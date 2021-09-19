@@ -104,17 +104,18 @@ func delete_tiles(id: int):
 		$SnakeApple.set_cell(cell.x, cell.y, -1)
 
 func _input(event: InputEvent) -> void:
+	var head_direction = relation_to(snake_body[0], snake_body[1])
 	if Input.is_action_just_pressed("ui_up"):
-		if not snake_direction == DOWN:
+		if not head_direction == "up":
 			snake_direction = UP
 	if Input.is_action_just_pressed("ui_right"):
-		if not snake_direction == LEFT:
+		if not head_direction == "right":
 			snake_direction = RIGHT
 	if Input.is_action_just_pressed("ui_left"):
-		if not snake_direction == RIGHT:
+		if not head_direction == "left":
 			snake_direction = LEFT
 	if Input.is_action_just_pressed("ui_down"):
-		if not snake_direction == UP:
+		if not head_direction == "down":
 			snake_direction = DOWN
 
 func check_apple_eaten():
@@ -122,11 +123,12 @@ func check_apple_eaten():
 		apple_position = place_apple()
 		add_apple = true
 		get_tree().call_group("ScoreGroup", "update_score", snake_body.size())
+		$CrunchSound.play()
 
 func check_game_over():
 	var head = snake_body[0]
 	
-	if head.x > 20 or head.x < 0 or head.y < 0 or head.y > 20:
+	if head.x > 19 or head.x < 0 or head.y < 0 or head.y > 19:
 		reset()
 	
 	for block in snake_body.slice(1, snake_body.size() - 1):
@@ -145,3 +147,5 @@ func _on_SnakeTick_timeout() -> void:
 
 func _process(delta: float) -> void:
 	check_game_over()
+	if apple_position in snake_body:
+		apple_position = place_apple()
