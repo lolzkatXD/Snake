@@ -121,6 +121,7 @@ func check_apple_eaten():
 	if apple_position == snake_body[0]:
 		apple_position = place_apple()
 		add_apple = true
+		get_tree().call_group("ScoreGroup", "update_score", snake_body.size())
 
 func check_game_over():
 	var head = snake_body[0]
