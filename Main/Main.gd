@@ -2,10 +2,16 @@ extends Node
 
 const SNAKE = 0
 const APPLE = 1
+
 var apple_position
 var snake_body = [Vector2(5, 10), Vector2(4, 10), Vector2(3, 10)]
 var snake_direction = Vector2(1, 0)
 var add_apple = false
+
+const UP = Vector2(0, -1)
+const RIGHT = Vector2(1, 0)
+const LEFT = Vector2(-1, 0)
+const DOWN = Vector2(0, 1)
 
 func _ready() -> void:
 	apple_position = place_apple()
@@ -23,8 +29,59 @@ func draw_apple():
 	$SnakeApple.set_cell(apple_position.x, apple_position.y, APPLE)
 
 func draw_snake():
-	for block in snake_body:
-		$SnakeApple.set_cell(block.x, block.y, SNAKE, false, false, false, Vector2(8, 0))
+	for block_index in snake_body.size():
+		var block = snake_body[block_index]
+		if block_index == 0:
+			var head_direction = relation_to(snake_body[0], snake_body[1])
+			if head_direction == "right":
+				$SnakeApple.set_cell(block.x, block.y, SNAKE, true, false, false, Vector2(2,0))
+			if head_direction == "left":
+				$SnakeApple.set_cell(block.x, block.y, SNAKE, false, false, false, Vector2(2,0))
+			if head_direction == "up":
+				$SnakeApple.set_cell(block.x, block.y, SNAKE, false, false, false, Vector2(3,0))
+			if head_direction == "down":
+				$SnakeApple.set_cell(block.x, block.y, SNAKE, false, true, false, Vector2(3,0))
+		
+		elif block_index == snake_body.size() - 1:
+			var tail_direction = relation_to(snake_body[-1], snake_body[-2])
+			if tail_direction == "right":
+				$SnakeApple.set_cell(block.x, block.y, SNAKE, false, false, false, Vector2(0,0))
+			if tail_direction == "left":
+				$SnakeApple.set_cell(block.x, block.y, SNAKE, true, false, false, Vector2(0,0))
+			if tail_direction == "up":
+				$SnakeApple.set_cell(block.x, block.y, SNAKE, false, true, false, Vector2(0,1))
+			if tail_direction == "down":
+				$SnakeApple.set_cell(block.x, block.y, SNAKE, false, false, false, Vector2(0,1))
+		
+		else:
+			var previous_block = snake_body[block_index + 1] - block
+			var next_block = snake_body[block_index - 1] - block
+			
+			if previous_block.y == next_block.y:
+				$SnakeApple.set_cell(block.x, block.y, SNAKE, false, false, false, Vector2(4, 0))
+			elif previous_block.x == next_block.x:
+				$SnakeApple.set_cell(block.x, block.y, SNAKE, false, false, false, Vector2(4, 1))
+			else:
+				if previous_block.x == -1 and next_block.y == -1 or next_block.x == -1 and previous_block.y == -1:
+					$SnakeApple.set_cell(block.x, block.y, SNAKE, true, true, false, Vector2(5, 0))
+				if previous_block.x == -1 and next_block.y == 1 or next_block.x == -1 and previous_block.y == 1:
+					$SnakeApple.set_cell(block.x, block.y, SNAKE, true, false, false, Vector2(5, 0))
+				if previous_block.x == 1 and next_block.y == -1 or next_block.x == 1 and previous_block.y == -1:
+					$SnakeApple.set_cell(block.x, block.y, SNAKE, false, true, false, Vector2(5, 0))
+				if previous_block.x == 1 and next_block.y == 1 or next_block.x == 1 and previous_block.y == 1:
+					$SnakeApple.set_cell(block.x, block.y, SNAKE, false, false, false, Vector2(5, 0))
+
+func relation_to(first_block: Vector2, second_block: Vector2):
+	var block_relation = second_block - first_block
+	
+	if block_relation == LEFT:
+		return "left"
+	if block_relation == DOWN:
+		return "down"
+	if block_relation == UP:
+		return "up"
+	if block_relation == RIGHT:
+		return "right"
 
 func move_snake():
 	if add_apple:
@@ -48,17 +105,17 @@ func delete_tiles(id: int):
 
 func _input(event: InputEvent) -> void:
 	if Input.is_action_just_pressed("ui_up"):
-		if not snake_direction == Vector2(0, 1):
-			snake_direction = Vector2(0, -1)
+		if not snake_direction == DOWN:
+			snake_direction = UP
 	if Input.is_action_just_pressed("ui_right"):
-		if not snake_direction == Vector2(-1, 0):
-			snake_direction = Vector2(1, 0)
+		if not snake_direction == LEFT:
+			snake_direction = RIGHT
 	if Input.is_action_just_pressed("ui_left"):
-		if not snake_direction == Vector2(1, 0):
-			snake_direction = Vector2(-1, 0)
+		if not snake_direction == RIGHT:
+			snake_direction = LEFT
 	if Input.is_action_just_pressed("ui_down"):
-		if not snake_direction == Vector2(0, -1):
-			snake_direction = Vector2(0, 1)
+		if not snake_direction == UP:
+			snake_direction = DOWN
 
 func check_apple_eaten():
 	if apple_position == snake_body[0]:
